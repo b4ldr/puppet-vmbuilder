@@ -16,32 +16,6 @@ describe 'vmbuilder' do
     {}
   end
 
-  # below is a list of the resource parameters that you can override.
-  # By default all non-required parameters are commented out,
-  # while all required parameters will require you to add a value
-  let(:params) do
-    {
-      package: nil,
-      conf_file: nil,
-      command: nil,
-      default_arch: nil,
-      default_domain: nil,
-      default_network: nil,
-      default_netmask: nil,
-      default_broadcast: nil,
-      default_gateway: nil,
-      default_name: nil,
-      default_username: nil,
-      default_password: nil,
-      hypervisors: nil,
-      distros: nil,
-      default_dns: nil,
-      default_firstboot: nil,
-      default_firstlogin: nil,
-      default_execscript: nil,
-
-    }
-  end
   # add these two lines in a single test block to enable puppet and hiera debug mode
   # Puppet::Util::Log.level = :debug
   # Puppet::Util::Log.newdestination(:console)
@@ -52,113 +26,92 @@ describe 'vmbuilder' do
       let(:facts) do
         facts
       end
-      case facts[:operatingsystem]
-      when 'Ubuntu'
-        case facts['lsbdistcodename']
-        when 'precise'
-        else
-        end
-      else
-      end
       describe 'check default config' do
         it { is_expected.to compile.with_all_deps }
-
-        
-  it do
-    is_expected.to contain_file(:undef).with(
-      ensure: 'file',
-    )
-  end
-
+        it do
+          is_expected.to contain_file('/etc/vmbuilder.cfg').with(
+            ensure: 'file',
+          )
+        end
       end
       describe 'Change Defaults' do
         context 'package' do
-          before { params.merge!(package: 'XXXchangemeXXX') }
+          before { params.merge!(package: 'foobar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'conf_file' do
-          before { params.merge!(conf_file: 'XXXchangemeXXX') }
+          before { params.merge!(conf_file: '/foo/bar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'command' do
-          before { params.merge!(command: 'XXXchangemeXXX') }
+          before { params.merge!(command: '/foo/bar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_arch' do
-          before { params.merge!(default_arch: 'XXXchangemeXXX') }
+          before { params.merge!(default_arch: 'foobar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_domain' do
-          before { params.merge!(default_domain: 'XXXchangemeXXX') }
+          before { params.merge!(default_domain: 'foo.bar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_network' do
-          before { params.merge!(default_network: 'XXXchangemeXXX') }
+          before { params.merge!(default_network: '192.0.2.0') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_netmask' do
-          before { params.merge!(default_netmask: 'XXXchangemeXXX') }
+          before { params.merge!(default_netmask: '255.255.255.224') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_broadcast' do
-          before { params.merge!(default_broadcast: 'XXXchangemeXXX') }
+          before { params.merge!(default_broadcast: '192.0.2.255') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_gateway' do
-          before { params.merge!(default_gateway: 'XXXchangemeXXX') }
+          before { params.merge!(default_gateway: '102.0.2.254') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_name' do
-          before { params.merge!(default_name: 'XXXchangemeXXX') }
+          before { params.merge!(default_name: 'foobar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_username' do
-          before { params.merge!(default_username: 'XXXchangemeXXX') }
+          before { params.merge!(default_username: 'foobar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_password' do
-          before { params.merge!(default_password: 'XXXchangemeXXX') }
-          it { is_expected.to compile }
-          # Add Check to validate change was successful
-        end
-        context 'hypervisors' do
-          before { params.merge!(hypervisors: 'XXXchangemeXXX') }
-          it { is_expected.to compile }
-          # Add Check to validate change was successful
-        end
-        context 'distros' do
-          before { params.merge!(distros: 'XXXchangemeXXX') }
+          before { params.merge!(default_password: 'foobar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_dns' do
-          before { params.merge!(default_dns: 'XXXchangemeXXX') }
+          before { params.merge!(default_dns: '192.0.2.53') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_firstboot' do
-          before { params.merge!(default_firstboot: 'XXXchangemeXXX') }
+          before { params.merge!(default_firstboot: '/foo/bar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_firstlogin' do
-          before { params.merge!(default_firstlogin: 'XXXchangemeXXX') }
+          before { params.merge!(default_firstlogin: '/foo/bar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
         context 'default_execscript' do
-          before { params.merge!(default_execscript: 'XXXchangemeXXX') }
+          before { params.merge!(default_execscript: '/foo/bar') }
           it { is_expected.to compile }
           # Add Check to validate change was successful
         end
