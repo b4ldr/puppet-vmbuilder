@@ -45,6 +45,7 @@ class vmbuilder (
     'DEFAULT' => {
       'arch'       => $default_arch,
       'domain'     => $default_domain,
+      'mask'       => $default_netmask,
       'net'        => $default_network,
       'bcast'      => $default_broadcast,
       'gw'         => $default_gateway,
@@ -54,7 +55,7 @@ class vmbuilder (
       'dns'        => $_default_dns,
       'firstboot'  => $_default_fisrtboot,
       'firstlogin' => $_default_fisrtlogin,
-      'execscript' => $_default_fisrtboot,
+      'execscript' => $_default_execscript,
     },
   }
   create_ini_settings($ini_settings, $ini_defaults)

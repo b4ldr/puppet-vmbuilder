@@ -2,7 +2,6 @@ fixtures:
     symlinks:
       vmbuilder: "#{source_dir}"
     repositories:
-      stdlib:
-        repo: https://github.com/puppetlabs/puppetlabs-stdlib.git
-        ref: 4.12.0
+      stdlib: https://github.com/puppetlabs/puppetlabs-stdlib.git
+      inifile: https://github.com/puppetlabs/puppetlabs-inifile.git
     forge_modules:

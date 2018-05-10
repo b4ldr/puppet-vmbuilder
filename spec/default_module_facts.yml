@@ -1,0 +1,10 @@
+---
+networking:
+  domain: example.com
+  network: 192.0.2.0
+  broadcast: 192.0.2.255
+  gateway: 192.0.2.254
+  netmask: 255.255.255.0
+os:
+  distro:
+    codename: xenial

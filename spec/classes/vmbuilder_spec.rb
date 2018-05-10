@@ -1,49 +1,117 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'vmbuilder' do
-  # by default the hiera integration uses hiera data from the shared_contexts.rb file
-  # but basically to mock hiera you first need to add a key/value pair
-  # to the specific context in the spec/shared_contexts.rb file
-  # Note: you can only use a single hiera context per describe/context block
-  # rspec-puppet does not allow you to swap out hiera data on a per test block
-  # include_context :hiera
-  let(:node) { 'vmbuilder.example.com' }
-
-  # below is the facts hash that gives you the ability to mock
-  # facts on a per describe/context block.  If you use a fact in your
-  # manifest you should mock the facts below.
-  let(:facts) do
-    {}
+  let(:title) { 'vmbuilder' }
+  let(:params) { {} }
+  let(:ini_settings) do
+    {
+      'arch'       => 'amd64',
+      'domain'     => 'example.com',
+      'mask'       => '255.255.255.0',
+      'net'        => '192.0.2.0',
+      'bcast'      => '192.0.2.255',
+      'gw'         => '192.0.2.254',
+      'name'       => 'ubuntu',
+      'username'   => 'ubuntu',
+      'pass'       => 'ubuntu'
+    }
   end
 
-  # add these two lines in a single test block to enable puppet and hiera debug mode
-  # Puppet::Util::Log.level = :debug
-  # Puppet::Util::Log.newdestination(:console)
-  # This will need to get moved
-  # it { pp catalogue.resources }
   on_supported_os.each do |os, facts|
     context "on #{os}" do
+      # cant seem to set this in default_module_facts
       let(:facts) do
-        facts
+        facts.merge!(
+          os: {
+            'distro' => { 'codename' => 'xenial' },
+            'architecture' => 'amd64'
+          }
+        )
       end
+
+      # it { pp catalogue.resources }
       describe 'check default config' do
         it { is_expected.to compile.with_all_deps }
+        it { is_expected.to contain_package('python-vm-builder') }
         it do
-          is_expected.to contain_file('/etc/vmbuilder.cfg').with(
-            ensure: 'file',
-          )
+          is_expected.to contain_file('/etc/vmbuilder.cfg').with_ensure('file')
+        end
+        it do
+          ini_settings.each_pair do |setting, value|
+            is_expected.to contain_ini_setting(
+              "/etc/vmbuilder.cfg [DEFAULT] #{setting}"
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: setting,
+              value: value,
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
+        end
+        %w[dns firstboot firstlogin execscript].each do |setting|
+          it do
+            is_expected.to contain_ini_setting(
+              "/etc/vmbuilder.cfg [DEFAULT] #{setting}"
+            ).with(
+              ensure: 'absent',
+              section: 'DEFAULT',
+              setting: setting,
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
       end
       describe 'Change Defaults' do
         context 'package' do
           before { params.merge!(package: 'foobar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it { is_expected.to contain_package('foobar') }
         end
         context 'conf_file' do
           before { params.merge!(conf_file: '/foo/bar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it { is_expected.to contain_ini_setting('/foo/bar [kvm] bridge') }
+          it { is_expected.to contain_ini_setting('/foo/bar [kvm] cpus') }
+          it { is_expected.to contain_ini_setting('/foo/bar [kvm] libvirt') }
+          it { is_expected.to contain_ini_setting('/foo/bar [kvm] mem') }
+          it { is_expected.to contain_ini_setting('/foo/bar [kvm] network') }
+          it { is_expected.to contain_ini_setting('/foo/bar [kvm] virtio_net') }
+          it { is_expected.to contain_ini_setting('/foo/bar [ubuntu] addpkg') }
+          it { is_expected.to contain_ini_setting('/foo/bar [ubuntu] components') }
+          it { is_expected.to contain_ini_setting('/foo/bar [ubuntu] flavour') }
+          it { is_expected.to contain_ini_setting('/foo/bar [ubuntu] removepkg') }
+          it { is_expected.to contain_ini_setting('/foo/bar [ubuntu] suite') }
+          it do
+            is_expected.to contain_file('/foo/bar').with_ensure('file')
+          end
+          it do
+            ini_settings.each_pair do |setting, value|
+              is_expected.to contain_ini_setting(
+                "/foo/bar [DEFAULT] #{setting}"
+              ).with(
+                ensure: 'present',
+                section: 'DEFAULT',
+                setting: setting,
+                value: value,
+                path: '/foo/bar'
+              )
+            end
+          end
+          %w[dns firstboot firstlogin execscript].each do |setting|
+            it do
+              is_expected.to contain_ini_setting(
+                "/foo/bar [DEFAULT] #{setting}"
+              ).with(
+                ensure: 'absent',
+                section: 'DEFAULT',
+                setting: setting,
+                path: '/foo/bar'
+              )
+            end
+          end
         end
         context 'command' do
           before { params.merge!(command: '/foo/bar') }
@@ -53,67 +121,197 @@ describe 'vmbuilder' do
         context 'default_arch' do
           before { params.merge!(default_arch: 'foobar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] arch'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'arch',
+              value: 'foobar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_domain' do
           before { params.merge!(default_domain: 'foo.bar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] domain'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'domain',
+              value: 'foo.bar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_network' do
-          before { params.merge!(default_network: '192.0.2.0') }
+          before { params.merge!(default_network: '192.0.2.42') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] net'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'net',
+              value: '192.0.2.42',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_netmask' do
-          before { params.merge!(default_netmask: '255.255.255.224') }
+          before { params.merge!(default_netmask: '255.255.255.42') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] mask'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'mask',
+              value: '255.255.255.42',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_broadcast' do
-          before { params.merge!(default_broadcast: '192.0.2.255') }
+          before { params.merge!(default_broadcast: '192.0.2.42') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] bcast'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'bcast',
+              value: '192.0.2.42',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_gateway' do
-          before { params.merge!(default_gateway: '102.0.2.254') }
+          before { params.merge!(default_gateway: '192.0.2.42') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] gw'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'gw',
+              value: '192.0.2.42',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_name' do
           before { params.merge!(default_name: 'foobar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] name'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'name',
+              value: 'foobar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_username' do
           before { params.merge!(default_username: 'foobar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] username'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'username',
+              value: 'foobar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_password' do
           before { params.merge!(default_password: 'foobar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] pass'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'pass',
+              value: 'foobar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_dns' do
           before { params.merge!(default_dns: '192.0.2.53') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] dns'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'dns',
+              value: '192.0.2.53',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_firstboot' do
           before { params.merge!(default_firstboot: '/foo/bar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] firstboot'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'firstboot',
+              value: '/foo/bar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_firstlogin' do
           before { params.merge!(default_firstlogin: '/foo/bar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] firstlogin'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'firstlogin',
+              value: '/foo/bar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_execscript' do
           before { params.merge!(default_execscript: '/foo/bar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [DEFAULT] execscript'
+            ).with(
+              ensure: 'present',
+              section: 'DEFAULT',
+              setting: 'execscript',
+              value: '/foo/bar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
       end
       describe 'check bad type' do

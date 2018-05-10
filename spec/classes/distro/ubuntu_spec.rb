@@ -1,35 +1,17 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'vmbuilder::distro::ubuntu' do
-  # by default the hiera integration uses hiera data from the shared_contexts.rb file
-  # but basically to mock hiera you first need to add a key/value pair
-  # to the specific context in the spec/shared_contexts.rb file
-  # Note: you can only use a single hiera context per describe/context block
-  # rspec-puppet does not allow you to swap out hiera data on a per test block
-  # include_context :hiera
-  let(:node) { 'vmbuilder::distro::ubuntu.example.com' }
-
-  # below is the facts hash that gives you the ability to mock
-  # facts on a per describe/context block.  If you use a fact in your
-  # manifest you should mock the facts below.
-  let(:facts) do
-    {}
-  end
-
-  # below is a list of the resource parameters that you can override.
-  # By default all non-required parameters are commented out,
-  # while all required parameters will require you to add a value
-  let(:params) do
+  let(:params) { {} }
+  let(:ini_settings) do
     {
-      default_suite: nil,
-      default_flavour: nil,
-      default_add_pkgs: nil,
-      default_remove_pkgs: nil,
-      default_components: nil,
-
+      'suite' => 'xenial',
+      'flavour' => 'virtual',
+      'components' => 'main, universe'
     }
   end
-  # add these two lines in a single test block to enable puppet and hiera debug mode
+
   # Puppet::Util::Log.level = :debug
   # Puppet::Util::Log.newdestination(:console)
   # This will need to get moved
@@ -37,45 +19,117 @@ describe 'vmbuilder::distro::ubuntu' do
   on_supported_os.each do |os, facts|
     context "on #{os}" do
       let(:facts) do
-        facts
+        facts.merge!(
+          os: {
+            'distro' => { 'codename' => 'xenial' },
+            'architecture' => 'amd64'
+          }
+        )
       end
-      case facts[:operatingsystem]
-      when 'Ubuntu'
-        case facts['lsbdistcodename']
-        when 'precise'
-        else
-        end
-      else
-      end
+
       describe 'check default config' do
         it { is_expected.to compile.with_all_deps }
-
+        it do
+          ini_settings.each_pair do |setting, value|
+            is_expected.to contain_ini_setting(
+              "/etc/vmbuilder.cfg [ubuntu] #{setting}"
+            ).with(
+              ensure: 'present',
+              section: 'ubuntu',
+              setting: setting,
+              value: value,
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
+        end
+        %w[addpkg removepkg].each do |setting|
+          it do
+            is_expected.to contain_ini_setting(
+              "/etc/vmbuilder.cfg [ubuntu] #{setting}"
+            ).with(
+              ensure: 'absent',
+              section: 'ubuntu',
+              setting: setting,
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
+        end
       end
       describe 'Change Defaults' do
         context 'default_suite' do
-          before { params.merge!(default_suite: 'XXXchangemeXXX') }
+          before { params.merge!(default_suite: 'trusty') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [ubuntu] suite'
+            ).with(
+              ensure: 'present',
+              section: 'ubuntu',
+              setting: 'suite',
+              value: 'trusty',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_flavour' do
-          before { params.merge!(default_flavour: 'XXXchangemeXXX') }
+          before { params.merge!(default_flavour: 'foobar') }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [ubuntu] flavour'
+            ).with(
+              ensure: 'present',
+              section: 'ubuntu',
+              setting: 'flavour',
+              value: 'foobar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_add_pkgs' do
-          before { params.merge!(default_add_pkgs: 'XXXchangemeXXX') }
+          before { params.merge!(default_add_pkgs: %w[foo bar]) }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [ubuntu] addpkg'
+            ).with(
+              ensure: 'present',
+              section: 'ubuntu',
+              setting: 'addpkg',
+              value: 'foo, bar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_remove_pkgs' do
-          before { params.merge!(default_remove_pkgs: 'XXXchangemeXXX') }
+          before { params.merge!(default_remove_pkgs: %w[foo bar]) }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [ubuntu] removepkg'
+            ).with(
+              ensure: 'present',
+              section: 'ubuntu',
+              setting: 'removepkg',
+              value: 'foo, bar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
         context 'default_components' do
-          before { params.merge!(default_components: 'XXXchangemeXXX') }
+          before { params.merge!(default_components: %w[foo bar]) }
           it { is_expected.to compile }
-          # Add Check to validate change was successful
+          it do
+            is_expected.to contain_ini_setting(
+              '/etc/vmbuilder.cfg [ubuntu] components'
+            ).with(
+              ensure: 'present',
+              section: 'ubuntu',
+              setting: 'components',
+              value: 'foo, bar',
+              path: '/etc/vmbuilder.cfg'
+            )
+          end
         end
       end
       describe 'check bad type' do

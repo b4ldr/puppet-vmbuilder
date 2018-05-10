@@ -1,20 +1,20 @@
 vmbuilder::package:  python-vm-builder
 vmbuilder::conf_file: /etc/vmbuilder.cfg
 vmbuilder::command: /usr/bin/vmbuilder
-vmbuilder::name: ubuntu
-vmbuilder::username: ubuntu
-vmbuilder::password: ubuntu
+vmbuilder::default_name: ubuntu
+vmbuilder::default_username: ubuntu
+vmbuilder::default_password: ubuntu
 vmbuilder::default_arch: "%{facts.os.architecture}"
 vmbuilder::default_domain: "%{facts.networking.domain}"
 vmbuilder::default_network: "%{facts.networking.network}"
+vmbuilder::default_netmask: "%{facts.networking.netmask}"
 vmbuilder::default_broadcast: "%{facts.networking.broadcast}"
 vmbuilder::default_gateway: "%{facts.networking.gateway}"
-vmbuilder::default_dns: "%{facts.networking.dns}"
 vmbuilder::hypervisors: 
 - kvm
 vmbuilder::distros: 
 - ubuntu
-vmbuilder::default_domain: ~
+vmbuilder::default_dns: ~
 vmbuilder::default_firstboot: ~
 vmbuilder::default_firstlogin: ~
 vmbuilder::default_execscript: ~
@@ -26,7 +26,7 @@ vmbuilder::hypervisor::kvm::default_mem: 128
 vmbuilder::hypervisor::kvm::default_cpus: 1
 vmbuilder::distro::ubuntu::default_suite: "%{facts.os.distro.codename}"
 vmbuilder::distro::ubuntu::default_flavour: virtual
-vmbuilder::distro::ubuntu::default_add_pkgs: []
-vmbuilder::distro::ubuntu::default_remove_pkgs: []
+vmbuilder::distro::ubuntu::default_add_pkgs: ~
+vmbuilder::distro::ubuntu::default_remove_pkgs: ~
 vmbuilder::distro::ubuntu::default_components: ['main', 'universe']
 
