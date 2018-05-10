@@ -51,5 +51,6 @@
 
 # nodes
 #--no-unquoted_node_name-check
+--no-relative_classname_inclusion-check
 
 # For more controls please see http://puppet-lint.com/plugins/
