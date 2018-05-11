@@ -4,7 +4,7 @@ define vmbuilder::host (
   Stdlib::Ipv4                    $ip,
   Vmbuilder::Hypervisor           $hypervisor   = kvm,
   Vmbuilder::Distro               $distro       = 'ubuntu',
-  Interger[0]                     $timeout      = 0,
+  Integer[0]                     $timeout      = 0,
   Optional[Stdlib::Host]          $hostname     = undef,
   Optional[Stdlib::Absolutepath]  $destination  = undef,
   Optional[String]                $arch         = undef,
