@@ -1,6 +1,7 @@
 vmbuilder::package:  python-vm-builder
 vmbuilder::conf_file: /etc/vmbuilder.cfg
 vmbuilder::command: /usr/bin/vmbuilder
+vmbuilder::destination_base: /var/lib/libvirt/images
 vmbuilder::default_name: ubuntu
 vmbuilder::default_username: ubuntu
 vmbuilder::default_password: ubuntu

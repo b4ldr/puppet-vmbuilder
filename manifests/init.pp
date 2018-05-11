@@ -4,6 +4,7 @@ class vmbuilder (
   String                         $package,
   Stdlib::Absolutepath           $conf_file,
   String                         $command,
+  Stdlib::Absolutepath           $destination_base,
   String                         $default_arch,
   Stdlib::Host                   $default_domain,
   Stdlib::Ipv4                   $default_network,
