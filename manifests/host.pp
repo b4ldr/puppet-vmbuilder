@@ -4,6 +4,7 @@ define vmbuilder::host (
   Stdlib::Ipv4                    $ip,
   Vmbuilder::Hypervisor           $hypervisor   = kvm,
   Vmbuilder::Distro               $distro       = 'ubuntu',
+  Interger[0]                     $timeout      = 0,
   Optional[Stdlib::Host]          $hostname     = undef,
   Optional[Stdlib::Absolutepath]  $destination  = undef,
   Optional[String]                $arch         = undef,
@@ -91,5 +92,6 @@ define vmbuilder::host (
   exec {"vmbuilder::host create ${name}":
     command => $command_str,
     creates => $_destination.split(' ')[1],
+    timeout => $timeout,
   }
 }
