@@ -75,6 +75,14 @@ class vmbuilder (
   $distros.each |String $distro| {
     include "vmbuilder::distro::${distro}"
   }
+  file_line{'patch https://bugs.launchpad.net/ubuntu/+source/vm-builder/+bug/1618899':
+    ensure            => absent,
+    path              => '/usr/lib/python2.7/dist-packages/VMBuilder/plugins/ubuntu/dapper.py',
+    match             => 'self.install_from_template\(\'\/etc\/sudoers',
+    match_for_absence => true,
+    require           => Package[$package],
+  }
+
   if $hosts {
     create_resources(vmbuilder::host, $hosts)
   }

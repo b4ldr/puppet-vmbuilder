@@ -34,6 +34,11 @@ describe 'vmbuilder' do
         it { is_expected.to compile.with_all_deps }
         it { is_expected.to contain_package('python-vm-builder') }
         it do
+          is_expected.to contain_file_line(
+            'patch https://bugs.launchpad.net/ubuntu/+source/vm-builder/+bug/1618899'
+          )
+        end
+        it do
           is_expected.to contain_file('/etc/vmbuilder.cfg').with_ensure('file')
         end
         it do
