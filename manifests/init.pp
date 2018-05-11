@@ -20,6 +20,7 @@ class vmbuilder (
   Optional[Stdlib::Absolutepath] $default_firstboot,
   Optional[Stdlib::Absolutepath] $default_firstlogin,
   Optional[Stdlib::Absolutepath] $default_execscript,
+  Optional[Hash]                 $hosts,
 ) {
   ensure_packages([$package])
   file {$conf_file:
@@ -65,5 +66,8 @@ class vmbuilder (
   }
   $distros.each |String $distro| {
     include "vmbuilder::distro::${distro}"
+  }
+  if $hosts {
+    create_resources(vmbuilder::host, $hosts)
   }
 }

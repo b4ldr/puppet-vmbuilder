@@ -19,6 +19,7 @@ vmbuilder::default_dns: ~
 vmbuilder::default_firstboot: ~
 vmbuilder::default_firstlogin: ~
 vmbuilder::default_execscript: ~
+vmbuilder::hosts: ~
 vmbuilder::hypervisor::kvm::libvirt_uri: qemu:///system
 vmbuilder::hypervisor::kvm::virtio_net: true
 vmbuilder::hypervisor::kvm::default_bridge: ~
