@@ -11,8 +11,6 @@ describe 'vmbuilder' do
       'domain'     => 'example.com',
       'mask'       => '255.255.255.0',
       'net'        => '192.0.2.0',
-      'bcast'      => '192.0.2.255',
-      'gw'         => '192.0.2.254',
       'name'       => 'ubuntu',
       'username'   => 'ubuntu',
       'pass'       => 'ubuntu'
@@ -51,7 +49,7 @@ describe 'vmbuilder' do
             )
           end
         end
-        %w[dns firstboot firstlogin execscript].each do |setting|
+        %w[bcast gw dns firstboot firstlogin execscript].each do |setting|
           it do
             is_expected.to contain_ini_setting(
               "/etc/vmbuilder.cfg [DEFAULT] #{setting}"
@@ -100,7 +98,7 @@ describe 'vmbuilder' do
               )
             end
           end
-          %w[dns firstboot firstlogin execscript].each do |setting|
+          %w[bcast gw dns firstboot firstlogin execscript].each do |setting|
             it do
               is_expected.to contain_ini_setting(
                 "/foo/bar [DEFAULT] #{setting}"

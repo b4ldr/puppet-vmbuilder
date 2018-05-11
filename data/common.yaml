@@ -9,8 +9,8 @@ vmbuilder::default_arch: "%{facts.os.architecture}"
 vmbuilder::default_domain: "%{facts.networking.domain}"
 vmbuilder::default_network: "%{facts.networking.network}"
 vmbuilder::default_netmask: "%{facts.networking.netmask}"
-vmbuilder::default_broadcast: "%{facts.networking.broadcast}"
-vmbuilder::default_gateway: "%{facts.networking.gateway}"
+vmbuilder::default_broadcast: ~
+vmbuilder::default_gateway: ~
 vmbuilder::hypervisors: 
 - kvm
 vmbuilder::distros: 
